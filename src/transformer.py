@@ -110,11 +110,7 @@ class TransformerEncoderLayer(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, iter, query, inputs, mask):
-        if (iter != 0):
-            input_norm = self.layer_norm(inputs)
-        else:
-            input_norm = inputs
-
+        input_norm = self.layer_norm(inputs) if (iter != 0) else inputs
         mask = mask.unsqueeze(1)
         context = self.self_attn(input_norm, input_norm, input_norm,
                                  mask=mask)

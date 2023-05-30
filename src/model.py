@@ -18,8 +18,6 @@ def init_params(model):
     for name, param in model.named_parameters():
         if param.data.dim() > 1:
             xavier_uniform_(param.data)
-        else:
-            pass
 
 
 def universal_sentence_embedding(sentences, mask, sqrt=True):
@@ -48,8 +46,7 @@ class BERTBackbone(nn.Module):
         h = universal_sentence_embedding(outputs[0], attention_mask)
         cls = outputs[1]
 
-        out = torch.cat([cls, h], dim=-1)
-        return out
+        return torch.cat([cls, h], dim=-1)
 
 
 class MLP(nn.Module):
@@ -110,9 +107,9 @@ class USDA(nn.Module):
             selected_attribute = torch.argmax(relevance, dim=2) # (batch, dialogue_len)
             selected_attribute_onehot = torch.nn.functional.one_hot(selected_attribute, num_classes=attribute_len) # (batch, dialogue_len, attribute_len)
             position = torch.tile(torch.range(1, dialog_len).view(1, dialog_len), (1, batch_size)).view(batch_size, dialog_len)
-            f = torch.sum(torch.div(selected_attribute_onehot, position), (1, 0)).view(1, attribute_len)
-            return f
-
+            return torch.sum(
+                torch.div(selected_attribute_onehot, position), (1, 0)
+            ).view(1, attribute_len)
         # score(1, attribute_len)
         score = torch.tile(score, (1, batch_size)).view(batch_size, 1, attribute_len)
         hidden = torch.squeeze(score.mm(attention_attribute)) # (batch, dim)

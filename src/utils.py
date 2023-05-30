@@ -16,7 +16,7 @@ def set_cuda(args):
         torch.backends.cudnn.deterministic = True
     devices_id = [int(device_id) for device_id in args.gpu.split()]
     device = (
-        torch.device("cuda:{}".format(str(devices_id[0])))
+        torch.device(f"cuda:{str(devices_id[0])}")
         if use_cuda
         else torch.device("cpu")
     )
@@ -60,7 +60,6 @@ def load_data(args, tokenizer):
 
     data = {'act_list': act_list}
     for set_name in ['train', 'valid', 'test']:
-        max_utt_len = 0
         max_dia_len = 0
         avg_utt_len = []
         avg_dia_len = []
@@ -78,6 +77,7 @@ def load_data(args, tokenizer):
                         break
                     schema_ids.append([101] + s_ids)  # [CLS] + (max_len-1) tokens
 
+        max_utt_len = 0
         with open(os.path.join(dirname, f'{set_name}_{args.data}.txt'), 'r', encoding='utf-8') as infile:
             for line in infile:
                 items = line.strip('\n').split('\t')
@@ -105,9 +105,9 @@ def load_data(args, tokenizer):
                 data[set_name]['sat'].append(sat)
                 data[set_name]['schema_ids'].append(schema_ids)
                 data[set_name]['schema_text'].append(schema_text)
-        print('{} set, max_utt_len: {}, max_dia_len: {}, avg_utt_len: {}, avg_dia_len: {}'.format(set_name, max_utt_len,
-                                                                                                  max_dia_len, float(
-                sum(avg_utt_len)) / len(avg_utt_len), float(sum(avg_dia_len)) / len(avg_dia_len)))
+        print(
+            f'{set_name} set, max_utt_len: {max_utt_len}, max_dia_len: {max_dia_len}, avg_utt_len: {float(sum(avg_utt_len)) / len(avg_utt_len)}, avg_dia_len: {float(sum(avg_dia_len)) / len(avg_dia_len)}'
+        )
 
     write_pkl(data, f'{dirname}/tokenized/{args.data}_{args.max_seq_len}.pkl')
 
